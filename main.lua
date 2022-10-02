@@ -1,5 +1,7 @@
 function love.load()
 
+    math.randomseed(os.time())
+
     love.mouse.setVisible(true)
 
     -- Library to manipulate physics engine
@@ -14,7 +16,7 @@ function love.load()
     gameState = 1
 
     -- Font for all text etc
-    gameFont = love.graphics.newFont("assets/SigmarOne-Regular.ttf")
+    gameFont = love.graphics.newFont(30)
 
     -- Music and SFX
     sounds = {}
@@ -22,35 +24,65 @@ function love.load()
     -- Sprites
     sprites = {}
     sprites.player = love.graphics.newImage("assets/img/player_grid.png")
+    sprites.daisy = love.graphics.newImage("assets/img/daisy_grid.png")
+    sprites.wasp = love.graphics.newImage("assets/img/wasp_grid.png")
+    sprites.sting = love.graphics.newImage("assets/img/sting.png")
 
     -- Animations
     local player_grid = anim8.newGrid(100, 100, sprites.player:getWidth(), sprites.player:getHeight())
+    local daisy_grid = anim8.newGrid(100, 100, sprites.daisy:getWidth(), sprites.daisy:getHeight())
+    local wasp_grid = anim8.newGrid(100, 100, sprites.wasp:getWidth(), sprites.wasp:getHeight())
 
     animations = {}
     animations.fly = anim8.newAnimation(player_grid("1 - 2", 1), 0.05)
+    animations.daisy = anim8.newAnimation(daisy_grid("1 - 4", 1), 0.5)
+    animations.wasp = anim8.newAnimation(player_grid("1 - 2", 1), 0.05)
 
     -- Creating world physics
     world = wf.newWorld(0, 0, false)
     world:setQueryDebugDrawing(true)
-    world:addCollisionClass("Player")
+    -- Set Colliders
+    world:addCollisionClass("Danger", {
+        ignores = {"Danger"}
+    })
+    world:addCollisionClass("Flowers", {
+        ignores = {"Flowers", "Danger"}
+    })
+    world:addCollisionClass("Player", {
+        ignores = {"Flowers"}
+    })
     world:addCollisionClass("Bounds")
 
     -- Don't let the player leave the window
-    top = world:newRectangleCollider(0, 0, love.graphics.getWidth(), 1, {collision_class = "Bounds"})
-    bottom = world:newRectangleCollider(0, love.graphics.getHeight(), love.graphics.getWidth(), 1, {collision_class = "Bounds"})
+    top = world:newRectangleCollider(0, 0, love.graphics.getWidth(), 1, {
+        collision_class = "Bounds"
+    })
+    bottom = world:newRectangleCollider(0, love.graphics.getHeight(), love.graphics.getWidth(), 1, {
+        collision_class = "Bounds"
+    })
     top:setType("static")
     bottom:setType("static")
-
 
     -- Entities
     -- Player
     require("assets/entities/player")
     -- Flowers
+    require("assets/entities/flowers")
     -- Wasps
+    require("assets/entities/wasps")
     -- Raindrops
     -- Lightning
     -- Clouds
 
+    -- Initial score
+    score = 0
+
+    -- Event Trigger
+    event = 7
+    trigger = 3
+
+    -- Init gameState
+    gameState = 1
 end
 
 function love.update(dt)
@@ -58,16 +90,48 @@ function love.update(dt)
     world:update(dt)
 
     updatePlayer(dt)
+    updateFlowers(dt)
 
+    if event > 0 then
+        event = event - dt
+    end
+
+    if event <= 0 then
+        gameState = 3
+    end
+
+    if gameState == 3 then
+        if trigger > 0 then
+            trigger = trigger - dt
+        end
+        if trigger <= 0 then
+            updateWasps(dt)
+        end
+    end
+
+    if gameState == 1 then
+        destroyAll()
+    end
 end
 
 function love.draw()
 
-    love.graphics.setBackgroundColor(255, 255, 255)
+    -- love.graphics.setBackgroundColor(255, 255, 255)
+
+    if gameState == 3 then
+        if trigger > 0 then
+            love.graphics.printf("Countdown: " .. math.ceil(trigger) .. "s", love.graphics.getWidth() / 2,
+                love.graphics.getHeight() / 2, love.graphics.getWidth() / 2, "left")
+        end
+        if trigger <= 0 then
+            drawWasps()
+        end
+    end
 
     world:draw()
 
     drawPlayer()
+    drawFlowers()
 end
 
 function love.keypressed(key, isrepeat)
@@ -91,6 +155,12 @@ function love.keypressed(key, isrepeat)
 
     -- Pause with spacebar
     if key == "space" then
+    end
+end
 
+function destroyAll()
+    destroyWasps()
+    for i, stinger in ipairs(stingers) do
+        destroyStingers(stinger, i)
     end
 end

@@ -1,9 +1,7 @@
 player = world:newRectangleCollider(100, love.graphics.getHeight() / 2, 45, 35, {
-    collision_class = "Player"
-})
+    collision_class = "Player"})
 player.speed = 8000
 player.alive = true
-player.rotation = 0
 player.animation = animations.fly
 
 mouse = {}
@@ -23,6 +21,7 @@ function updatePlayer(dt)
         player:applyForce(0, -player.speed)
     end
 
+    -- Don't let player leave window
     if player:enter("Bounds") then
         if py < love.graphics.getHeight() / 2 then
             player:applyLinearImpulse(0, 1000)
@@ -30,6 +29,8 @@ function updatePlayer(dt)
             player:applyLinearImpulse(0, -1000)
         end
     end
+
+    player:setX(100)
 
     player.animation:update(dt)
 
