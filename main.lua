@@ -8,8 +8,6 @@ function love.load()
     wf = require('libs/windfield/windfield')
     -- Animation library
     anim8 = require('libs/anim8')
-    -- Camera library
-    humpCam = require('libs/hump/camera')
     -- Save data
     require('libs/show')
 
@@ -23,6 +21,7 @@ function love.load()
 
     -- Sprites
     sprites = {}
+    sprites.clouds = love.graphics.newImage("assets/img/clouds.png")
     sprites.player = love.graphics.newImage("assets/img/player_grid.png")
     sprites.daisy = love.graphics.newImage("assets/img/daisy_grid.png")
     sprites.wasp = love.graphics.newImage("assets/img/wasp_grid.png")
@@ -73,6 +72,7 @@ function love.load()
     -- Raindrops
     -- Lightning
     -- Clouds
+    require("assets/entities/clouds")
 
     -- Initial score
     score = 0
@@ -97,13 +97,20 @@ function love.update(dt)
     end
 
     if event <= 0 then
-        gameState = 3
+        gameState = 4
     end
 
-    if gameState == 3 then
+    if gameState ~= 1 then
         if trigger > 0 then
             trigger = trigger - dt
         end
+    end
+
+    if gameState == 4 then
+        updateClouds(dt)
+    end
+
+    if gameState == 3 then
         if trigger <= 0 then
             updateWasps(dt)
         end
@@ -118,11 +125,14 @@ function love.draw()
 
     -- love.graphics.setBackgroundColor(255, 255, 255)
 
-    if gameState == 3 then
+    if gameState ~= 1 then
         if trigger > 0 then
             love.graphics.printf("Countdown: " .. math.ceil(trigger) .. "s", love.graphics.getWidth() / 2,
                 love.graphics.getHeight() / 2, love.graphics.getWidth() / 2, "left")
         end
+    end
+
+    if gameState == 3 then
         if trigger <= 0 then
             drawWasps()
         end
@@ -132,6 +142,12 @@ function love.draw()
 
     drawPlayer()
     drawFlowers()
+
+    if gameState == 4 then
+        if trigger <= 0 then
+            drawClouds()
+        end
+    end
 end
 
 function love.keypressed(key, isrepeat)
