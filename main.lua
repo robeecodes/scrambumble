@@ -124,6 +124,15 @@ function love.load()
     gameEnd = love.graphics.newImage("assets/img/win-screen.png")
     gameDeath = love.graphics.newImage("assets/img/death-screen.png")
 
+    -- Create save data
+    saveState = {}
+    saveState.highScore = 0
+
+    if love.filesystem.getInfo("data.lua") then
+        local data = love.filesystem.load("data.lua")
+        data()
+    end
+
 end
 
 function love.update(dt)
@@ -139,6 +148,10 @@ function love.update(dt)
         for i, flower in ipairs(flowers) do
             flower:destroy()
             table.remove(flowers, i)
+        end
+        if score > saveState.highScore then
+            saveState.highScore = score
+            love.filesystem.write("data.lua", table.show(saveState, "saveState"))
         end
     end
 
@@ -233,6 +246,7 @@ function love.draw()
         printBackground()
         love.graphics.setFont(gameFont)
         love.graphics.printf("Score: " .. score, 5, 5, love.graphics.getWidth(), "left")
+        love.graphics.printf("Best Score: " .. saveState.highScore, 5, 25, love.graphics.getWidth(), "left")
         love.graphics.printf("Time remaining: " .. math.ceil(gameOverTimer) .. "s", -5, 5, love.graphics.getWidth(),
             "right")
         love.graphics.printf("Lives: " .. player.lives, -5, 25, love.graphics.getWidth(), "right")
