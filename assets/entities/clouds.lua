@@ -6,7 +6,7 @@ function updateClouds(dt)
         cloudTimer = 10
         event = 7
         trigger = 3
-        gameState = 1
+        gameState = 2
     end
 end
 

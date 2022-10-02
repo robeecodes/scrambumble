@@ -1,7 +1,8 @@
 player = world:newRectangleCollider(100, love.graphics.getHeight() / 2, 45, 35, {
-    collision_class = "Player"})
+    collision_class = "Player"
+})
 player.speed = 8000
-player.alive = true
+player.lives = 3
 player.animation = animations.fly
 
 mouse = {}
@@ -30,6 +31,20 @@ function updatePlayer(dt)
         end
     end
 
+    if player:enter("Wet") then
+        hit:play()
+        player:applyLinearImpulse(0, 100000)
+    end
+
+    if player:enter("Danger") then
+        player.lives = player.lives - 1
+        hit:play()
+        if player.lives == 0 then
+            death:play()
+            gameState = 0
+        end
+    end
+
     player:setX(100)
 
     player.animation:update(dt)
@@ -37,10 +52,8 @@ function updatePlayer(dt)
 end
 
 function drawPlayer()
-    if player.alive then
-        local px, py = player:getPosition()
-        player.animation:draw(sprites.player, px, py, playerMouseAngle(px, py), 0.5, 0.5, 50, 50)
-    end
+    local px, py = player:getPosition()
+    player.animation:draw(sprites.player, px, py, playerMouseAngle(px, py), 0.5, 0.5, 50, 50)
 end
 
 -- Control rotation of player

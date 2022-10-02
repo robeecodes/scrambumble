@@ -14,7 +14,8 @@ function updateWasps(dt)
         waspTimer = 10
         event = 7
         trigger = 3
-        gameState = 1
+        player.lives = 3
+        gameState = 2
     end
 
     if #wasps < maxWasps then
@@ -79,7 +80,7 @@ function bounceWasps()
         else
             wasp:applyForce(0, -wasp.speed)
         end
-
+        wasp:setX(love.graphics.getWidth() - 100)
     end
 end
 
