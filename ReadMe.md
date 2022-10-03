@@ -20,7 +20,7 @@ Help Bumble on their quest for nectar!
 
 Bumble will follow your mouse up and down the screen. Your aim is to collect as many flowers as possible in 100 seconds.
 
-![ScramBumble Basic Gameplay Loop!](gameplay\Gameplay.png)
+![ScramBumble Basic Gameplay Loop!](gameplay/Gameplay.png)
 
 Different flowers score different amounts of points:
 
